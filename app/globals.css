@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-w: 220px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+
+/* ── Pitch canvas cursor ── */
+.pitch-crosshair { cursor: crosshair; }
+
+/* ── Compact table ── */
+.tagger-table th,
+.tagger-table td {
+  padding: 4px 8px;
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
+/* ── Hotkey chip ── */
+.hotkey-chip {
+  @apply inline-flex items-center gap-1 bg-gray-700 text-gray-200 text-xs px-2 py-0.5 rounded font-mono;
+}
+
+/* ── Form label shorthand ── */
+.label-xs {
+  @apply mb-0.5 block text-xs font-medium text-gray-400;
+}
