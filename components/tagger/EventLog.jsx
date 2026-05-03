@@ -1,7 +1,7 @@
 'use client';
 import { useTaggerStore } from '@/store/taggerStore';
 import { supabase } from '@/lib/supabase';
-import { Trash2, RotateCcw } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 function fmtTime(s) {
   if (s == null) return '--:--';
@@ -22,7 +22,7 @@ export default function EventLog({ onUndo }) {
 
   if (!events.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-xs text-gray-500">
+      <div className="flex flex-col items-center justify-center py-8 text-xs font-bold text-gray-500 border-2 border-dashed border-black">
         <p>No events yet.</p>
         <p className="mt-1">Log an event to see it here.</p>
       </div>
@@ -33,7 +33,7 @@ export default function EventLog({ onUndo }) {
     <div className="overflow-auto">
       <table className="tagger-table w-full border-collapse text-left">
         <thead>
-          <tr className="border-b border-gray-700 text-gray-400">
+          <tr>
             <th>Time</th>
             <th>Dir</th>
             <th>Player</th>
@@ -46,19 +46,18 @@ export default function EventLog({ onUndo }) {
         </thead>
         <tbody>
           {events.map(ev => (
-            <tr key={ev.match_event_id}
-              className="border-b border-gray-800 hover:bg-gray-800/40">
-              <td className="font-mono text-gray-300">{fmtTime(ev.match_time_seconds)}</td>
-              <td className="text-gray-500">{ev.team_direction}</td>
-              <td className="text-white font-medium">{getPlayerName(ev.player_id)}</td>
-              <td className="text-blue-300">{ev.action}</td>
+            <tr key={ev.match_event_id}>
+              <td className="font-mono font-bold">{fmtTime(ev.match_time_seconds)}</td>
+              <td>{ev.team_direction}</td>
+              <td className="font-bold">{getPlayerName(ev.player_id)}</td>
+              <td className="text-blue-700 font-bold">{ev.action}</td>
               <td className={outcomeColor(ev.outcome)}>{ev.outcome}</td>
-              <td className="text-gray-400">{ev.type ?? '–'}</td>
-              <td className="text-gray-400">{ev.reaction_player_id ? getPlayerName(ev.reaction_player_id) : '–'}</td>
+              <td>{ev.type ?? '–'}</td>
+              <td>{ev.reaction_player_id ? getPlayerName(ev.reaction_player_id) : '–'}</td>
               <td>
                 <button
                   onClick={() => handleDelete(ev.match_event_id)}
-                  className="text-gray-600 hover:text-red-400 transition-colors"
+                  className="text-gray-400 hover:text-red-600 transition-none"
                   title="Delete event"
                 >
                   <Trash2 size={12} />
@@ -73,10 +72,10 @@ export default function EventLog({ onUndo }) {
 }
 
 function outcomeColor(outcome) {
-  if (!outcome) return 'text-gray-400';
+  if (!outcome) return '';
   const o = outcome.toLowerCase();
-  if (o.includes('successful') || o === 'goal' || o === 'assist') return 'text-green-400';
-  if (o.includes('unsuccessful') || o === 'missed' || o === 'off-target') return 'text-red-400';
-  if (o === 'save' || o === 'block' || o === 'woodwork') return 'text-yellow-400';
-  return 'text-gray-300';
+  if (o.includes('successful') || o === 'goal' || o === 'assist') return 'text-green-700 font-bold';
+  if (o.includes('unsuccessful') || o === 'missed' || o === 'off-target') return 'text-red-600 font-bold';
+  if (o === 'save' || o === 'block' || o === 'woodwork') return 'text-orange-600 font-bold';
+  return '';
 }

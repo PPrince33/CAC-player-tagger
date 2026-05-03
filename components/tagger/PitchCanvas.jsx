@@ -3,7 +3,6 @@ import { useRef, useEffect, useCallback } from 'react';
 import { useTaggerStore } from '@/store/taggerStore';
 import { needsEndPoint } from '@/lib/cacLogic';
 
-// Pitch is 120 × 80 units rendered to fill canvas
 const PITCH_W = 120;
 const PITCH_H = 80;
 
@@ -14,13 +13,12 @@ export default function PitchCanvas({ readOnly = false, highlightCoords = null }
 
   const needsEnd = needsEndPoint(action);
 
-  // ── Draw ──────────────────────────────────────────────────
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx  = canvas.getContext('2d');
-    const W    = canvas.width;
-    const H    = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const W   = canvas.width;
+    const H   = canvas.height;
 
     ctx.clearRect(0, 0, W, H);
     drawPitch(ctx, W, H);
@@ -33,7 +31,7 @@ export default function PitchCanvas({ readOnly = false, highlightCoords = null }
     }
     if (coords.end) {
       const [px, py] = toPixel(coords.end.x, coords.end.y, W, H);
-      drawDot(ctx, px, py, '#22c55e', 6);
+      drawDot(ctx, px, py, '#34D399', 6);
     }
     if (coords.start && coords.end) {
       const [sx, sy] = toPixel(coords.start.x, coords.start.y, W, H);
@@ -42,7 +40,6 @@ export default function PitchCanvas({ readOnly = false, highlightCoords = null }
     }
   }, [startCoord, endCoord, highlightCoords]);
 
-  // ── Click handler ─────────────────────────────────────────
   const handleClick = useCallback((e) => {
     if (readOnly) return;
     const canvas = canvasRef.current;
@@ -56,7 +53,6 @@ export default function PitchCanvas({ readOnly = false, highlightCoords = null }
     } else if (drawingPhase === 'end' && needsEnd) {
       setEndCoord(coord);
     } else if (drawingPhase === 'end' && !needsEnd) {
-      // Action doesn't need end point — treat as new start
       clearCoords();
       setStartCoord(coord);
     }
@@ -70,21 +66,24 @@ export default function PitchCanvas({ readOnly = false, highlightCoords = null }
         ref={canvasRef}
         width={340} height={220}
         onClick={handleClick}
-        style={{ cursor, width: '100%', height: 'auto', display: 'block', borderRadius: 6 }}
-        className="bg-green-900"
+        style={{ cursor, width: '100%', height: 'auto', display: 'block' }}
+        className="border-2 border-black bg-green-900"
       />
       {!readOnly && (
-        <div className="flex items-center justify-between text-xs text-gray-400">
+        <div className="flex items-center justify-between text-xs font-bold text-gray-600">
           <span>
             {drawingPhase === 'start' && 'Click to set start position'}
             {drawingPhase === 'end'   && (needsEnd ? 'Click to set end position' : 'Start set — click Clear or log event')}
             {drawingPhase === 'done'  && `S: ${startCoord?.x.toFixed(1)},${startCoord?.y.toFixed(1)}  E: ${endCoord?.x.toFixed(1)},${endCoord?.y.toFixed(1)}`}
           </span>
-          <button onClick={clearCoords} className="text-gray-500 hover:text-white">Clear</button>
+          <button onClick={clearCoords}
+            className="border-2 border-black px-2 py-0.5 text-xs font-bold hover:bg-red-500 hover:text-white hover:border-red-500 transition-none">
+            Clear
+          </button>
         </div>
       )}
       {readOnly && highlightCoords?.start && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs font-bold text-gray-500">
           S: {highlightCoords.start.x},{highlightCoords.start.y}
           {highlightCoords.end && ` → E: ${highlightCoords.end.x},${highlightCoords.end.y}`}
         </p>
@@ -93,14 +92,11 @@ export default function PitchCanvas({ readOnly = false, highlightCoords = null }
   );
 }
 
-// ── Pitch drawing helpers ──────────────────────────────────
-
 function toPixel(xPct, yPct, W, H) {
   return [(xPct / 100) * W, (yPct / 100) * H];
 }
 
 function drawPitch(ctx, W, H) {
-  // Pitch background
   ctx.fillStyle = '#166534';
   ctx.fillRect(0, 0, W, H);
 
@@ -111,35 +107,27 @@ function drawPitch(ctx, W, H) {
   function py(y) { return (y / PITCH_H) * H; }
   function rect(x, y, w, h) { ctx.strokeRect(px(x), py(y), px(w) - px(0), py(h) - py(0)); }
 
-  // Outer boundary
   rect(0, 0, PITCH_W, PITCH_H);
-  // Centre line
   ctx.beginPath(); ctx.moveTo(px(60), py(0)); ctx.lineTo(px(60), py(PITCH_H)); ctx.stroke();
-  // Centre circle
   ctx.beginPath(); ctx.arc(px(60), py(40), (18 / PITCH_W) * W, 0, Math.PI * 2); ctx.stroke();
-  // Centre dot
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
   ctx.beginPath(); ctx.arc(px(60), py(40), 2, 0, Math.PI * 2); ctx.fill();
 
-  // Penalty areas
-  rect(0,  18, 18, 44);   // left
-  rect(102, 18, 18, 44);  // right
-  // Six-yard boxes
-  rect(0,  30, 6,  20);
+  rect(0,   18, 18, 44);
+  rect(102, 18, 18, 44);
+  rect(0,   30, 6,  20);
   rect(114, 30, 6,  20);
-  // Penalty spots
+
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.beginPath(); ctx.arc(px(12), py(40), 2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(px(12),  py(40), 2, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(px(108), py(40), 2, 0, Math.PI * 2); ctx.fill();
 
-  // Goals
   ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-  rect(-2, 34, 2, 12);     // left goal
-  rect(120, 34, 2, 12);    // right goal
+  rect(-2,  34, 2, 12);
+  rect(120, 34, 2, 12);
 
-  // Goal zones (red markers on edges)
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(0, py(34), 4, py(12) - py(0));
+  ctx.fillRect(0,     py(34), 4, py(12) - py(0));
   ctx.fillRect(W - 4, py(34), 4, py(12) - py(0));
 }
 
@@ -164,7 +152,6 @@ function drawArrow(ctx, sx, sy, ex, ey) {
   ctx.lineWidth   = 2;
   ctx.stroke();
 
-  // Arrowhead
   ctx.beginPath();
   ctx.moveTo(ex, ey);
   ctx.lineTo(ex - headLen * Math.cos(angle - Math.PI / 6), ey - headLen * Math.sin(angle - Math.PI / 6));

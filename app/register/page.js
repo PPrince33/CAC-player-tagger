@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Tag } from 'lucide-react';
 
 export default function RegisterPage() {
   const router  = useRouter();
@@ -30,55 +30,63 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] px-4">
       <div className="w-full max-w-sm">
-        <h1 className="mb-1 text-2xl font-bold text-white">Create Account</h1>
-        <p className="mb-6 text-sm text-gray-400">Join CAC Tagger</p>
+        {/* Logo */}
+        <div className="mb-6 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center border-2 border-black bg-black shadow-brutal-sm">
+            <Tag className="text-[#34D399]" size={18} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-black tracking-widest">CAC TAGGER</h1>
+            <p className="text-xs text-gray-500">Create your account</p>
+          </div>
+        </div>
 
         {error && (
-          <div className="mb-4 rounded border border-red-600 bg-red-950 px-3 py-2 text-sm text-red-300">
+          <div className="mb-4 border-2 border-red-500 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 shadow-[3px_3px_0px_0px_rgba(239,68,68,1)]">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-400">Username</label>
+            <label className="nb-label">Username</label>
             <input
               type="text" required value={username}
               onChange={e => setUsername(e.target.value)}
-              className="w-full rounded-md border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
+              className="nb-input"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-400">Email</label>
+            <label className="nb-label">Email</label>
             <input
               type="email" required value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
+              className="nb-input"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-400">Password</label>
+            <label className="nb-label">Password</label>
             <input
               type="password" required value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
+              className="nb-input"
             />
           </div>
 
           <button
             type="submit" disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-green-600 py-2 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50"
+            className="nb-btn-green flex w-full items-center justify-center gap-2 disabled:opacity-50"
           >
             <UserPlus size={16} />
             {loading ? 'Creating…' : 'Create Account'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-gray-500">
+        <p className="mt-4 text-center text-xs text-gray-600">
           Already have an account?{' '}
-          <Link href="/login" className="text-green-400 hover:underline">Sign in</Link>
+          <Link href="/login" className="font-bold text-black underline hover:text-[#34D399]">Sign in</Link>
         </p>
       </div>
     </div>

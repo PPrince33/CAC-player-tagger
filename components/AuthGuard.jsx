@@ -28,8 +28,8 @@ export default function AuthGuard({ children, requireAdmin = false }) {
 
   if (!ready) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-950">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
+      <div className="flex h-screen items-center justify-center bg-[#F9FAFB]">
+        <div className="h-10 w-10 animate-spin border-4 border-black border-t-[#34D399]" />
       </div>
     );
   }

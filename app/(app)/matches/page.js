@@ -4,34 +4,32 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { PlusCircle, Play, CheckSquare, RefreshCw } from 'lucide-react';
+import { PlusCircle, Play, CheckSquare } from 'lucide-react';
 
-const STATUS_COLOR = {
-  Doing: 'bg-blue-800 text-blue-200',
-  QC:    'bg-yellow-800 text-yellow-200',
-  Done:  'bg-green-800 text-green-200',
+const STATUS_BADGE = {
+  Doing: 'nb-badge-blue',
+  QC:    'nb-badge-yellow',
+  Done:  'nb-badge-green',
 };
 
 export default function MatchesPage() {
   const router  = useRouter();
   const [matches, setMatches] = useState([]);
-  const [userId,  setUserId]  = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) { setUserId(user.id); fetchMatches(user.id); }
+      if (user) fetchMatches(user.id);
     });
   }, []);
 
   async function fetchMatches(uid) {
     setLoading(true);
-    // Get matches I created OR am assigned to
     const { data: assigned } = await supabase
       .from('match_assignments').select('match_id').eq('user_id', uid);
     const assignedIds = (assigned ?? []).map(a => a.match_id);
 
-    let query = supabase
+    const { data, error } = await supabase
       .from('matches')
       .select(`
         match_id, match_name, tournament_name, match_date, status, video_url,
@@ -41,7 +39,6 @@ export default function MatchesPage() {
       `)
       .order('created_at', { ascending: false });
 
-    const { data, error } = await query;
     if (!error) setMatches(data ?? []);
     setLoading(false);
   }
@@ -55,25 +52,22 @@ export default function MatchesPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">My Matches</h1>
-          <p className="text-sm text-gray-400">{matches.length} matches</p>
+          <h1 className="text-xl font-bold text-black">My Matches</h1>
+          <p className="text-xs text-gray-500">{matches.length} matches</p>
         </div>
-        <Link
-          href="/matches/create"
-          className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500"
-        >
-          <PlusCircle size={16} /> Create Match
+        <Link href="/matches/create" className="nb-btn-green flex items-center gap-2">
+          <PlusCircle size={14} /> Create Match
         </Link>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin border-4 border-black border-t-[#34D399]" />
         </div>
       ) : matches.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-700 py-20 text-center">
-          <p className="text-gray-400">No matches yet.</p>
-          <Link href="/matches/create" className="mt-3 inline-block text-sm text-green-400 hover:underline">
+        <div className="border-2 border-dashed border-black py-20 text-center">
+          <p className="text-sm font-bold text-gray-500">No matches yet.</p>
+          <Link href="/matches/create" className="mt-3 inline-block text-xs font-bold text-black underline hover:text-[#34D399]">
             Create your first match →
           </Link>
         </div>
@@ -93,23 +87,23 @@ function MatchCard({ match, onStatusChange }) {
   const eventCount = match.event_count?.[0]?.count ?? 0;
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-      <div className="mb-1 flex items-start justify-between gap-2">
+    <div className="nb-card p-4">
+      <div className="mb-2 flex items-start justify-between gap-2">
         <div>
           <p className="text-xs text-gray-500">{match.tournament_name}</p>
-          <h3 className="font-semibold text-white leading-tight">{match.match_name}</h3>
+          <h3 className="font-bold text-black leading-tight">{match.match_name}</h3>
           {(match.home_team || match.away_team) && (
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-600 mt-0.5">
               {match.home_team?.team_name ?? '–'} vs {match.away_team?.team_name ?? '–'}
             </p>
           )}
         </div>
-        <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[match.status] ?? 'bg-gray-700 text-gray-300'}`}>
+        <span className={`shrink-0 ${STATUS_BADGE[match.status] ?? 'nb-badge'}`}>
           {match.status}
         </span>
       </div>
 
-      <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+      <div className="mt-2 flex items-center gap-3 text-xs text-gray-500 border-t-2 border-black pt-2">
         <span>{match.match_date}</span>
         <span>·</span>
         <span>{eventCount} events</span>
@@ -118,21 +112,21 @@ function MatchCard({ match, onStatusChange }) {
       <div className="mt-3 flex gap-2">
         <button
           onClick={() => router.push(`/tag/${match.match_id}`)}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-green-700 py-1.5 text-xs font-medium text-white hover:bg-green-600"
+          className="nb-btn-green flex flex-1 items-center justify-center gap-1.5 py-1.5 text-xs"
         >
-          <Play size={12} /> Tag
+          <Play size={11} /> Tag
         </button>
         <button
           onClick={() => router.push(`/qc/${match.match_id}`)}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-gray-700 py-1.5 text-xs font-medium text-white hover:bg-gray-600"
+          className="nb-btn flex flex-1 items-center justify-center gap-1.5 py-1.5 text-xs"
         >
-          <CheckSquare size={12} /> QC
+          <CheckSquare size={11} /> QC
         </button>
         {match.status === 'Doing' && (
           <button
             onClick={() => onStatusChange(match.match_id, 'QC')}
             title="Mark as QC"
-            className="rounded-md bg-gray-800 px-2 py-1.5 text-xs text-gray-400 hover:bg-yellow-800 hover:text-yellow-200"
+            className="border-2 border-black px-2 py-1.5 text-xs font-bold hover:bg-[#FACC15] hover:border-[#FACC15] transition-none"
           >
             → QC
           </button>
@@ -141,7 +135,7 @@ function MatchCard({ match, onStatusChange }) {
           <button
             onClick={() => onStatusChange(match.match_id, 'Done')}
             title="Mark as Done"
-            className="rounded-md bg-gray-800 px-2 py-1.5 text-xs text-gray-400 hover:bg-green-800 hover:text-green-200"
+            className="border-2 border-black px-2 py-1.5 text-xs font-bold hover:bg-[#34D399] hover:border-[#34D399] transition-none"
           >
             → Done
           </button>

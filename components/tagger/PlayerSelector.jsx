@@ -12,9 +12,6 @@ export default function PlayerSelector({ label, value, onChange, teamId }) {
   const [newPos,    setNewPos]    = useState('FW');
   const [saving,    setSaving]    = useState(false);
 
-  const selected = players.find(p => p.player_id === value);
-
-  // Sorted: jersey number first, then name
   const sorted = [...players].sort((a, b) => {
     const ja = a.jersey_number ?? 999, jb = b.jersey_number ?? 999;
     if (ja !== jb) return ja - jb;
@@ -41,7 +38,6 @@ export default function PlayerSelector({ label, value, onChange, teamId }) {
     addPlayer(data);
     onChange(data.player_id);
 
-    // Also add to lineup if we have a match and team
     if (matchData?.match_id && tid) {
       await supabase.from('lineups').upsert({
         match_id: matchData.match_id, team_id: tid, player_id: data.player_id,
@@ -55,13 +51,13 @@ export default function PlayerSelector({ label, value, onChange, teamId }) {
 
   return (
     <div className="space-y-1">
-      <label className="block text-xs font-medium text-gray-400">{label}</label>
+      <label className="nb-label">{label}</label>
 
       <div className="flex gap-1">
         <select
           value={value ?? ''}
           onChange={e => onChange(e.target.value || null)}
-          className="flex-1 rounded-md border border-gray-700 bg-gray-800 px-2 py-1.5 text-xs text-white focus:border-green-500 focus:outline-none"
+          className="flex-1 border-2 border-black bg-white px-2 py-1.5 text-xs font-bold focus:outline-none focus:shadow-brutal-sm transition-none"
         >
           <option value="">— none —</option>
           {sorted.map(p => (
@@ -73,7 +69,7 @@ export default function PlayerSelector({ label, value, onChange, teamId }) {
         <button
           type="button"
           onClick={() => setCreating(v => !v)}
-          className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-xs text-gray-400 hover:text-green-400"
+          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold hover:bg-[#34D399] transition-none"
           title="Add new player"
         >
           <UserPlus size={14} />
@@ -81,8 +77,8 @@ export default function PlayerSelector({ label, value, onChange, teamId }) {
       </div>
 
       {creating && (
-        <div className="rounded-md border border-gray-700 bg-gray-800 p-2 space-y-1.5">
-          <p className="text-xs font-medium text-gray-300">New Player</p>
+        <div className="border-2 border-black bg-[#F9FAFB] p-2 shadow-brutal-sm space-y-1.5">
+          <p className="text-xs font-bold uppercase">New Player</p>
           <input
             className={inputCls} placeholder="Name *"
             value={newName} onChange={e => setNewName(e.target.value)}
@@ -101,11 +97,11 @@ export default function PlayerSelector({ label, value, onChange, teamId }) {
           </div>
           <div className="flex gap-1">
             <button onClick={createPlayer} disabled={saving}
-              className="flex-1 rounded bg-green-700 py-1 text-xs text-white hover:bg-green-600 disabled:opacity-50">
+              className="flex-1 border-2 border-black bg-[#34D399] py-1 text-xs font-bold hover:bg-black hover:text-[#34D399] transition-none disabled:opacity-50">
               {saving ? 'Saving…' : 'Add'}
             </button>
             <button onClick={() => setCreating(false)}
-              className="rounded bg-gray-700 px-2 py-1 text-xs text-gray-400 hover:text-white">
+              className="border-2 border-black bg-white px-2 py-1 text-xs font-bold hover:bg-red-500 hover:text-white transition-none">
               <X size={12} />
             </button>
           </div>
@@ -115,4 +111,4 @@ export default function PlayerSelector({ label, value, onChange, teamId }) {
   );
 }
 
-const inputCls = 'w-full rounded border border-gray-700 bg-gray-900 px-2 py-1 text-xs text-white focus:border-green-500 focus:outline-none';
+const inputCls = 'w-full border-2 border-black bg-white px-2 py-1 text-xs font-bold focus:outline-none transition-none';

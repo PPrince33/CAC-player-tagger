@@ -28,13 +28,11 @@ export default function CreateMatchPage() {
 
   function set(k, v) { setForm(p => ({ ...p, [k]: v })); }
 
-  // ── Roster CSV/XLSX parsing ──
   async function parseRosterFile(file, side) {
     const data = await file.arrayBuffer();
     const wb   = XLSX.read(data);
     const ws   = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-    // Expect columns: jersey_number, player_name, position
     const players = rows.slice(1).map(r => ({
       jersey_number: parseInt(r[0]) || null,
       player_name:   String(r[1] ?? '').trim(),
@@ -56,14 +54,12 @@ export default function CreateMatchPage() {
     XLSX.writeFile(wb, 'roster_template.xlsx');
   }
 
-  // ── Submit ──
   async function handleSubmit(e) {
     e.preventDefault();
     setError(''); setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
 
     try {
-      // Upsert teams
       async function upsertTeam(name) {
         if (!name.trim()) return null;
         const { data: existing } = await supabase
@@ -78,7 +74,6 @@ export default function CreateMatchPage() {
       const homeTeamId = await upsertTeam(form.home_team_name);
       const awayTeamId = await upsertTeam(form.away_team_name);
 
-      // Create match
       const { data: match, error: mErr } = await supabase
         .from('matches')
         .insert({
@@ -95,11 +90,9 @@ export default function CreateMatchPage() {
         .select('match_id').single();
       if (mErr) throw mErr;
 
-      // Upsert players + lineups
       async function insertRoster(roster, teamId) {
         for (const p of roster) {
           if (!p.player_name) continue;
-          // Upsert player
           const { data: existing } = await supabase
             .from('players').select('player_id')
             .eq('player_name', p.player_name)
@@ -114,7 +107,6 @@ export default function CreateMatchPage() {
             if (pErr) throw pErr;
             playerId = newP.player_id;
           }
-          // Lineup
           await supabase.from('lineups').upsert({
             match_id: match.match_id, team_id: teamId, player_id: playerId,
             jersey_no: p.jersey_number, position: p.position, starting_xi: true,
@@ -135,31 +127,33 @@ export default function CreateMatchPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-xl font-bold text-white">Create Match</h1>
+      <h1 className="mb-6 text-xl font-bold text-black">Create Match</h1>
 
       {error && (
-        <div className="mb-4 rounded border border-red-600 bg-red-950 px-3 py-2 text-sm text-red-300">{error}</div>
+        <div className="mb-4 border-2 border-red-500 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 shadow-[3px_3px_0px_0px_rgba(239,68,68,1)]">
+          {error}
+        </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ── Match Metadata ── */}
-        <section className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <h2 className="mb-4 text-sm font-semibold text-gray-300">Match Details</h2>
+        {/* Match Metadata */}
+        <section className="nb-card p-4">
+          <h2 className="nb-section-title">Match Details</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Tournament Name" required>
-              <input className={inputCls} required value={form.tournament_name}
+              <input className="nb-input" required value={form.tournament_name}
                 onChange={e => set('tournament_name', e.target.value)} />
             </Field>
             <Field label="Match Name / ID" required>
-              <input className={inputCls} required value={form.match_name}
+              <input className="nb-input" required value={form.match_name}
                 onChange={e => set('match_name', e.target.value)} />
             </Field>
             <Field label="Match Date" required>
-              <input type="date" className={inputCls} required value={form.match_date}
+              <input type="date" className="nb-input" required value={form.match_date}
                 onChange={e => set('match_date', e.target.value)} />
             </Field>
             <Field label="Format">
-              <select className={inputCls} value={form.is_futsal}
+              <select className="nb-select" value={form.is_futsal}
                 onChange={e => set('is_futsal', e.target.value === 'true')}>
                 <option value="false">Football (11v11)</option>
                 <option value="true">Futsal</option>
@@ -168,29 +162,29 @@ export default function CreateMatchPage() {
           </div>
         </section>
 
-        {/* ── Video Source ── */}
-        <section className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <h2 className="mb-4 text-sm font-semibold text-gray-300">Video Source</h2>
+        {/* Video Source */}
+        <section className="nb-card p-4">
+          <h2 className="nb-section-title">Video Source</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Source Type">
-              <select className={inputCls} value={form.video_source_type}
+              <select className="nb-select" value={form.video_source_type}
                 onChange={e => set('video_source_type', e.target.value)}>
                 {VIDEO_TYPES.map(t => <option key={t}>{t}</option>)}
               </select>
             </Field>
             <Field label="YouTube URL">
-              <input className={inputCls} placeholder="https://www.youtube.com/watch?v=..."
+              <input className="nb-input" placeholder="https://www.youtube.com/watch?v=..."
                 value={form.video_url} onChange={e => set('video_url', e.target.value)} />
             </Field>
           </div>
         </section>
 
-        {/* ── Teams & Rosters ── */}
-        <section className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-300">Teams & Rosters</h2>
+        {/* Teams & Rosters */}
+        <section className="nb-card p-4">
+          <div className="mb-3 flex items-center justify-between border-b-2 border-black pb-1">
+            <h2 className="text-xs font-bold uppercase">Teams & Rosters</h2>
             <button type="button" onClick={downloadTemplate}
-              className="flex items-center gap-1 text-xs text-blue-400 hover:underline">
+              className="flex items-center gap-1 text-xs font-bold text-black hover:text-[#34D399]">
               <Download size={12} /> Download Template
             </button>
           </div>
@@ -205,8 +199,8 @@ export default function CreateMatchPage() {
         </section>
 
         <button type="submit" disabled={saving}
-          className="flex items-center gap-2 rounded-md bg-green-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50">
-          <PlusCircle size={16} />
+          className="nb-btn-green flex items-center gap-2 disabled:opacity-50">
+          <PlusCircle size={14} />
           {saving ? 'Creating…' : 'Create Match'}
         </button>
       </form>
@@ -214,13 +208,11 @@ export default function CreateMatchPage() {
   );
 }
 
-// ── Sub-components ──
-
 function Field({ label, required, children }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-400">
-        {label}{required && <span className="ml-0.5 text-red-400">*</span>}
+      <label className="nb-label">
+        {label}{required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
       {children}
     </div>
@@ -231,19 +223,17 @@ function RosterSide({ label, nameVal, onNameChange, roster, onFile }) {
   return (
     <div className="space-y-2">
       <Field label={label}>
-        <input className={inputCls} placeholder="Team name"
+        <input className="nb-input" placeholder="Team name"
           value={nameVal} onChange={e => onNameChange(e.target.value)} />
       </Field>
-      <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-gray-700 px-3 py-2 text-xs text-gray-400 hover:border-gray-500">
+      <label className="flex cursor-pointer items-center gap-2 border-2 border-dashed border-black px-3 py-2 text-xs font-bold hover:bg-[#FACC15] transition-none">
         <Upload size={12} /> Upload Roster (CSV/XLSX)
         <input type="file" accept=".csv,.xlsx,.xls" className="hidden"
           onChange={e => e.target.files?.[0] && onFile(e.target.files[0])} />
       </label>
       {roster.length > 0 && (
-        <p className="text-xs text-green-400">{roster.length} players loaded</p>
+        <p className="text-xs font-bold text-[#34D399]">{roster.length} players loaded</p>
       )}
     </div>
   );
 }
-
-const inputCls = 'w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none';

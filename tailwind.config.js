@@ -5,16 +5,25 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        mono: ['"Courier New"', 'Courier', 'monospace'],
+      },
       colors: {
-        brand: {
-          DEFAULT: '#16a34a',
-          dark: '#15803d',
-          light: '#22c55e',
+        neon: '#34D399',
+        brutal: {
+          yellow: '#FACC15',
+          bg:     '#F9FAFB',
         },
       },
+      boxShadow: {
+        brutal:    '4px 4px 0px 0px rgba(0,0,0,1)',
+        'brutal-sm':'3px 3px 0px 0px rgba(0,0,0,1)',
+        'brutal-lg':'6px 6px 0px 0px rgba(0,0,0,1)',
+      },
+      borderWidth: { 3: '3px' },
+      transitionProperty: { none: 'none' },
     },
   },
   plugins: [],

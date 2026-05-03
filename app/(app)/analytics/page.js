@@ -9,14 +9,10 @@ export default function AnalyticsPage() {
   const [matches,  setMatches]  = useState([]);
   const [analysts, setAnalysts] = useState([]);
   const [loading,  setLoading]  = useState(true);
-  const [profile,  setProfile]  = useState(null);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: prof }     = await supabase.from('profiles').select('role').eq('id', user.id).single();
-      setProfile(prof);
-
       const [{ data: evs }, { data: mats }, { data: profs }] = await Promise.all([
         supabase.from('match_events').select('match_event_id,action,created_at,analyst_id').limit(5000),
         supabase.from('matches').select('match_id,status,created_at'),
@@ -43,14 +39,12 @@ export default function AnalyticsPage() {
     };
   }, [events, matches]);
 
-  // Action breakdown
   const actionBreakdown = useMemo(() => {
     const counts = {};
     events.forEach(e => { counts[e.action] = (counts[e.action] ?? 0) + 1; });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
   }, [events]);
 
-  // Daily events last 30 days
   const daily = useMemo(() => {
     const map = {};
     const now = Date.now();
@@ -65,7 +59,6 @@ export default function AnalyticsPage() {
     return Object.entries(map);
   }, [events]);
 
-  // Analyst leaderboard
   const leaderboard = useMemo(() => {
     const counts = {};
     events.forEach(e => { counts[e.analyst_id] = (counts[e.analyst_id] ?? 0) + 1; });
@@ -77,57 +70,57 @@ export default function AnalyticsPage() {
 
   if (loading) return (
     <div className="flex h-60 items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
+      <div className="h-8 w-8 animate-spin border-4 border-black border-t-[#34D399]" />
     </div>
   );
 
-  const maxDaily = Math.max(...daily.map(([,v]) => v), 1);
+  const maxDaily  = Math.max(...daily.map(([,v]) => v), 1);
   const maxAction = actionBreakdown[0]?.[1] ?? 1;
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <h1 className="text-xl font-bold text-white">Analytics</h1>
+      <h1 className="text-xl font-bold text-black">Analytics</h1>
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <KPICard icon={<Layers size={20} />}  label="Total Matches"  value={stats.totalMatches} sub={`${stats.doneMatches} done`} />
-        <KPICard icon={<Activity size={20} />} label="Total Events"   value={stats.totalEvents.toLocaleString()} />
+        <KPICard icon={<Layers size={20} />}   label="Total Matches"  value={stats.totalMatches} sub={`${stats.doneMatches} done`} />
+        <KPICard icon={<Activity size={20} />}  label="Total Events"   value={stats.totalEvents.toLocaleString()} />
         <KPICard icon={<BarChart2 size={20} />} label="Today's Events" value={stats.todayEvents} />
-        <KPICard icon={<Trophy size={20} />}   label="Avg / Match"    value={stats.avgPerMatch} />
+        <KPICard icon={<Trophy size={20} />}    label="Avg / Match"    value={stats.avgPerMatch} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Daily chart */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <h2 className="mb-3 text-sm font-semibold text-gray-300">Events — Last 30 Days</h2>
+        <div className="nb-card p-4">
+          <h2 className="nb-section-title">Events — Last 30 Days</h2>
           <div className="flex items-end gap-0.5 h-32">
             {daily.map(([date, count]) => (
               <div key={date} className="flex-1 flex flex-col items-center gap-0.5" title={`${date}: ${count}`}>
                 <div
-                  className="w-full rounded-sm bg-green-600"
+                  className="w-full bg-[#34D399] border border-black"
                   style={{ height: `${(count / maxDaily) * 100}%`, minHeight: count ? 2 : 0 }}
                 />
               </div>
             ))}
           </div>
-          <div className="mt-1 flex justify-between text-xs text-gray-600">
+          <div className="mt-1 flex justify-between text-xs text-gray-500">
             <span>{daily[0]?.[0]?.slice(5)}</span>
             <span>{daily[daily.length - 1]?.[0]?.slice(5)}</span>
           </div>
         </div>
 
         {/* Action breakdown */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <h2 className="mb-3 text-sm font-semibold text-gray-300">Top Actions</h2>
+        <div className="nb-card p-4">
+          <h2 className="nb-section-title">Top Actions</h2>
           <div className="space-y-1.5">
             {actionBreakdown.map(([action, count]) => (
               <div key={action} className="flex items-center gap-2">
-                <span className="w-28 shrink-0 truncate text-xs text-gray-400">{action}</span>
-                <div className="flex-1 rounded-full bg-gray-800 h-2">
-                  <div className="h-2 rounded-full bg-green-600"
+                <span className="w-28 shrink-0 truncate text-xs font-bold text-black">{action}</span>
+                <div className="flex-1 border border-black h-3 bg-[#F9FAFB]">
+                  <div className="h-full bg-[#FACC15]"
                     style={{ width: `${(count / maxAction) * 100}%` }} />
                 </div>
-                <span className="w-10 text-right text-xs text-gray-400">{count.toLocaleString()}</span>
+                <span className="w-10 text-right text-xs font-bold text-black">{count.toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -135,22 +128,22 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Analyst leaderboard */}
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-gray-300">Analyst Leaderboard</h2>
-        <table className="w-full text-xs">
+      <div className="nb-card p-4">
+        <h2 className="nb-section-title">Analyst Leaderboard</h2>
+        <table className="tagger-table w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-gray-700 text-gray-400">
-              <th className="pb-2 text-left">#</th>
-              <th className="pb-2 text-left">Analyst</th>
-              <th className="pb-2 text-right">Events Tagged</th>
+            <tr>
+              <th>#</th>
+              <th>Analyst</th>
+              <th className="text-right">Events Tagged</th>
             </tr>
           </thead>
           <tbody>
             {leaderboard.map(({ name, n }, i) => (
-              <tr key={name} className="border-b border-gray-800">
-                <td className="py-1.5 text-gray-500">{i + 1}</td>
-                <td className="py-1.5 text-white font-medium">{name}</td>
-                <td className="py-1.5 text-right text-gray-300">{n.toLocaleString()}</td>
+              <tr key={name}>
+                <td className="text-gray-500">{i + 1}</td>
+                <td className="font-bold text-black">{name}</td>
+                <td className="text-right font-bold">{n.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
@@ -162,10 +155,10 @@ export default function AnalyticsPage() {
 
 function KPICard({ icon, label, value, sub }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-      <div className="mb-2 text-green-500">{icon}</div>
-      <p className="text-xs text-gray-400">{label}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
+    <div className="nb-card p-4">
+      <div className="mb-2 text-black">{icon}</div>
+      <p className="text-xs font-bold text-gray-500">{label}</p>
+      <p className="text-2xl font-bold text-black">{value}</p>
       {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
     </div>
   );

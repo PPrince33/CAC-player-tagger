@@ -2,32 +2,129 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --sidebar-w: 220px;
+/* ── NEO-BRUTALIST BASE ─────────────────────────────────────── */
+*, *::before, *::after {
+  font-family: 'Courier New', Courier, monospace !important;
+  box-sizing: border-box;
 }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+body {
+  background: #F9FAFB;
+  color: #000;
+  text-transform: uppercase;
+}
 
-/* ── Pitch canvas cursor ── */
-.pitch-crosshair { cursor: crosshair; }
+/* inputs/textareas keep normal case for usability */
+input, textarea {
+  text-transform: none;
+}
+input::placeholder, textarea::placeholder {
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+select, option {
+  text-transform: uppercase;
+}
 
-/* ── Compact table ── */
+/* ── SCROLLBAR ─────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F9FAFB; border-left: 2px solid black; }
+::-webkit-scrollbar-thumb { background: black; }
+
+/* ── NB UTILITIES ──────────────────────────────────────────── */
+@layer components {
+
+  /* Card */
+  .nb-card {
+    @apply bg-white border-2 border-black shadow-brutal;
+  }
+
+  /* Buttons */
+  .nb-btn {
+    @apply bg-white border-2 border-black font-bold uppercase px-4 py-2
+           shadow-brutal-sm cursor-pointer
+           hover:bg-black hover:text-white hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]
+           transition-none;
+  }
+  .nb-btn-green {
+    @apply bg-[#34D399] text-black border-2 border-black font-bold uppercase px-4 py-2
+           shadow-brutal-sm cursor-pointer
+           hover:bg-black hover:text-[#34D399] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]
+           transition-none;
+  }
+  .nb-btn-yellow {
+    @apply bg-[#FACC15] text-black border-2 border-black font-bold uppercase px-4 py-2
+           shadow-brutal-sm cursor-pointer
+           hover:bg-black hover:text-[#FACC15] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]
+           transition-none;
+  }
+  .nb-btn-red {
+    @apply bg-red-500 text-white border-2 border-black font-bold uppercase px-3 py-2
+           shadow-brutal-sm cursor-pointer
+           hover:bg-black hover:text-red-400 hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]
+           transition-none;
+  }
+  .nb-btn-sm {
+    @apply border-2 border-black font-bold uppercase px-3 py-1 text-xs
+           shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer
+           hover:bg-black hover:text-white hover:shadow-none
+           transition-none;
+  }
+
+  /* Inputs */
+  .nb-input {
+    @apply bg-white border-2 border-black px-3 py-2 w-full
+           focus:outline-none focus:shadow-brutal-sm
+           transition-none;
+  }
+  .nb-select {
+    @apply bg-white border-2 border-black px-2 py-1.5 w-full
+           focus:outline-none focus:shadow-brutal-sm
+           transition-none cursor-pointer;
+  }
+
+  /* Labels */
+  .nb-label {
+    @apply block text-xs font-bold uppercase mb-1;
+  }
+
+  /* Section header */
+  .nb-section-title {
+    @apply text-xs font-bold uppercase border-b-2 border-black pb-1 mb-3;
+  }
+
+  /* Badge variants */
+  .nb-badge {
+    @apply border-2 border-black text-black font-bold uppercase text-xs px-2 py-0.5;
+  }
+  .nb-badge-teal   { @apply nb-badge bg-teal-400; }
+  .nb-badge-blue   { @apply nb-badge bg-blue-400; }
+  .nb-badge-orange { @apply nb-badge bg-orange-400; }
+  .nb-badge-green  { @apply nb-badge bg-[#34D399]; }
+  .nb-badge-yellow { @apply nb-badge bg-[#FACC15]; }
+  .nb-badge-red    { @apply nb-badge bg-red-400; }
+}
+
+/* ── TAGGER TABLE ─────────────────────────────────────────── */
 .tagger-table th,
 .tagger-table td {
   padding: 4px 8px;
   white-space: nowrap;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace !important;
+}
+.tagger-table th {
+  background: #FACC15;
+  border-bottom: 2px solid black;
+  font-weight: 700;
+}
+.tagger-table tr {
+  border-bottom: 1px solid black;
+}
+.tagger-table tr:hover {
+  background: #F9FAFB;
 }
 
-/* ── Hotkey chip ── */
-.hotkey-chip {
-  @apply inline-flex items-center gap-1 bg-gray-700 text-gray-200 text-xs px-2 py-0.5 rounded font-mono;
-}
-
-/* ── Form label shorthand ── */
-.label-xs {
-  @apply mb-0.5 block text-xs font-medium text-gray-400;
-}
+/* ── PITCH CROSSHAIR ─────────────────────────────────────── */
+.pitch-crosshair { cursor: crosshair; }
